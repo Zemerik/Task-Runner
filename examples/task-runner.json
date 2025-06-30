@@ -1,0 +1,111 @@
+{
+  "env": {
+    "NODE_ENV": "development",
+    "PORT": "3000"
+  },
+  "default_timeout": 300,
+  "tasks": {
+    "clean": {
+      "description": "Clean build artifacts",
+      "commands": [
+        "rm -rf dist",
+        "rm -rf node_modules/.cache",
+        "rm -rf coverage"
+      ]
+    },
+    "install": {
+      "description": "Install dependencies",
+      "commands": [
+        "npm install"
+      ]
+    },
+    "build": {
+      "description": "Build for production",
+      "dependencies": ["clean"],
+      "commands": [
+        "npm run compile",
+        "npm run bundle",
+        "npm run optimize"
+      ],
+      "sequential": true
+    },
+    "dev": {
+      "description": "Start development environment",
+      "commands": [
+        "npm run build:watch",
+        "npm run server:dev",
+        "npm run test:watch"
+      ],
+      "parallel": true
+    },
+    "test": {
+      "description": "Run tests",
+      "commands": [
+        "npm run test:unit",
+        "npm run test:integration"
+      ],
+      "parallel": true
+    },
+    "test:ci": {
+      "description": "Run tests in CI environment",
+      "commands": [
+        "npm run test:unit -- --coverage",
+        "npm run test:integration -- --coverage"
+      ],
+      "env": {
+        "CI": "true"
+      }
+    },
+    "lint": {
+      "description": "Run linting",
+      "commands": [
+        "npm run lint:js",
+        "npm run lint:css",
+        "npm run lint:typescript"
+      ],
+      "parallel": true
+    },
+    "format": {
+      "description": "Format code",
+      "commands": [
+        "npm run format:js",
+        "npm run format:css"
+      ],
+      "parallel": true
+    },
+    "check": {
+      "description": "Run all checks",
+      "dependencies": ["lint", "format", "test"],
+      "commands": []
+    },
+    "deploy:staging": {
+      "description": "Deploy to staging",
+      "dependencies": ["build", "test:ci"],
+      "commands": [
+        "npm run deploy:staging"
+      ],
+      "env": {
+        "NODE_ENV": "staging"
+      }
+    },
+    "deploy:prod": {
+      "description": "Deploy to production",
+      "dependencies": ["build", "test:ci"],
+      "commands": [
+        "npm run deploy:prod"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "deploy": {
+      "description": "Deploy to production with health check",
+      "dependencies": ["deploy:staging"],
+      "commands": [
+        "npm run health-check",
+        "npm run deploy:prod"
+      ],
+      "continue_on_error": false
+    }
+  }
+} 

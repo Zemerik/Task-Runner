@@ -1,0 +1,29 @@
+[package]
+name = "task-runner"
+version = "0.1.0"
+edition = "2021"
+authors = ["Hemang Yadav"]
+description = "A fast and flexible CLI task runner for managing development workflows"
+license = "MIT"
+repository = "https://github.com/Zemerik/task-runner"
+keywords = ["cli", "task-runner", "workflow", "automation"]
+categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "task-runner"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+anyhow = "1.0"
+thiserror = "1.0"
+colored = "2.0"
+indicatif = "0.17"
+futures = "0.3"
+toml = "0.8"
+dirs = "5.0"
+config = "0.14" 

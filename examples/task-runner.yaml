@@ -1,0 +1,123 @@
+env:
+  NODE_ENV: development
+  DATABASE_URL: postgresql://localhost/dev
+  REDIS_URL: redis://localhost:6379
+
+default_timeout: 300
+default_working_dir: "./src"
+
+tasks:
+  clean:
+    description: Clean build artifacts
+    commands:
+      - "rm -rf dist"
+      - "rm -rf node_modules/.cache"
+      - "rm -rf coverage"
+
+  install:
+    description: Install dependencies
+    commands:
+      - "npm install"
+
+  backend:
+    description: Start backend server
+    commands:
+      - "cargo run"
+      - "cargo test --watch"
+    parallel: true
+    working_dir: "./backend"
+    env:
+      RUST_LOG: debug
+
+  frontend:
+    description: Start frontend development
+    commands:
+      - "npm run dev"
+      - "npm run test:watch"
+    parallel: true
+    working_dir: "./frontend"
+
+  dev:
+    description: Start full development environment
+    dependencies: ["backend", "frontend"]
+    commands: []
+
+  build:
+    description: Build for production
+    dependencies: ["clean"]
+    commands:
+      - "cargo build --release"
+      - "npm run build"
+    working_dir: "."
+    sequential: true
+
+  test:
+    description: Run all tests
+    commands:
+      - "cargo test"
+      - "npm run test"
+    working_dir: "."
+    parallel: true
+
+  test:ci:
+    description: Run tests in CI environment
+    commands:
+      - "cargo test --release"
+      - "npm run test:ci"
+    working_dir: "."
+    env:
+      CI: "true"
+
+  lint:
+    description: Run linting
+    commands:
+      - "cargo clippy"
+      - "npm run lint"
+    working_dir: "."
+    parallel: true
+
+  format:
+    description: Format code
+    commands:
+      - "cargo fmt"
+      - "npm run format"
+    working_dir: "."
+    parallel: true
+
+  check:
+    description: Run all checks
+    dependencies: ["lint", "format", "test"]
+    commands: []
+
+  deploy:staging:
+    description: Deploy to staging
+    dependencies: ["build", "test:ci"]
+    commands:
+      - "docker build -t app:staging ."
+      - "docker push registry.example.com/app:staging"
+      - "kubectl apply -f k8s/staging/"
+    env:
+      NODE_ENV: staging
+
+  deploy:prod:
+    description: Deploy to production
+    dependencies: ["build", "test:ci"]
+    commands:
+      - "docker build -t app:prod ."
+      - "docker push registry.example.com/app:prod"
+      - "kubectl apply -f k8s/production/"
+    env:
+      NODE_ENV: production
+
+  health-check:
+    description: Check application health
+    commands:
+      - "curl -f http://staging.example.com/health"
+    timeout: 30
+
+  deploy:
+    description: Deploy to production with health check
+    dependencies: ["deploy:staging", "health-check"]
+    commands:
+      - "npm run deploy:prod"
+    continue_on_error: false 

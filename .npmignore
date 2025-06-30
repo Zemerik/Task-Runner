@@ -1,0 +1,41 @@
+# Source code (not needed for users)
+# src/ - REMOVED: Now included in npm package
+Cargo.toml
+Cargo.lock
+
+# Development files
+# examples/ - REMOVED: Now included in npm package
+# scripts/ - REMOVED: Now included in npm package
+tests/
+INSTALL.md
+v101.md
+
+# Build artifacts
+target/
+*.rs.bk
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+
+# Environment files
+.env
+.env.local
+
+# Documentation (README.md is included via package.json)
+LICENSE 

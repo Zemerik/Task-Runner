@@ -1,0 +1,53 @@
+{
+  "name": "@zemerik/task-runner",
+  "version": "1.0.1",
+  "description": "A fast and flexible CLI task runner for managing development workflows",
+  "main": "index.js",
+  "bin": {
+    "task-runner": "./bin/task-runner"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "examples/",
+    "scripts/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "cargo build --release",
+    "install": "npm run build && npm run package",
+    "package": "mkdir -p bin && cp target/release/task-runner bin/",
+    "test": "cargo test",
+    "clean": "cargo clean && rm -rf bin/"
+  },
+  "keywords": [
+    "cli",
+    "task-runner",
+    "workflow",
+    "automation",
+    "build-tool",
+    "development"
+  ],
+  "author": "Hemang Yadav",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zemerik/task-runner.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Zemerik/task-runner/issues"
+  },
+  "homepage": "https://github.com/Zemerik/task-runner#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
+} 

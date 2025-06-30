@@ -1,0 +1,155 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Cache Rust dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+
+    - name: Build for multiple platforms
+      run: |
+        # Linux
+        cargo build --release --target x86_64-unknown-linux-gnu
+        cargo build --release --target aarch64-unknown-linux-gnu
+        
+        # macOS
+        cargo build --release --target x86_64-apple-darwin
+        cargo build --release --target aarch64-apple-darwin
+        
+        # Windows
+        cargo build --release --target x86_64-pc-windows-msvc
+
+    - name: Create release assets
+      run: |
+        mkdir -p release-assets
+        
+        # Linux
+        cp target/x86_64-unknown-linux-gnu/release/task-runner release-assets/task-runner-x86_64-unknown-linux-gnu
+        cp target/aarch64-unknown-linux-gnu/release/task-runner release-assets/task-runner-aarch64-unknown-linux-gnu
+        
+        # macOS
+        cp target/x86_64-apple-darwin/release/task-runner release-assets/task-runner-x86_64-apple-darwin
+        cp target/aarch64-apple-darwin/release/task-runner release-assets/task-runner-aarch64-apple-darwin
+        
+        # Windows
+        cp target/x86_64-pc-windows-msvc/release/task-runner.exe release-assets/task-runner-x86_64-pc-windows-msvc.exe
+        
+        # Make Linux and macOS binaries executable
+        chmod +x release-assets/task-runner-*
+
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          ## 🎉 Release ${{ github.ref }}
+          
+          ### 📦 What's New
+          - [Add release notes here]
+          
+          ### 🚀 Installation
+          ```bash
+          npm install -g @zemerik/task-runner
+          ```
+          
+          ### 📋 Changes
+          - [List changes here]
+          
+          ### 🔧 Bug Fixes
+          - [List bug fixes here]
+          
+          ### 🆕 Features
+          - [List new features here]
+          
+          ### 📚 Documentation
+          - [Documentation updates here]
+          
+          ### 🧪 Testing
+          - All tests pass
+          - Cross-platform builds verified
+          
+          ### 📊 Downloads
+          Download the appropriate binary for your platform from the assets below.
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release-assets/task-runner-x86_64-unknown-linux-gnu
+        asset_name: task-runner-x86_64-unknown-linux-gnu
+        asset_content_type: application/octet-stream
+
+    - name: Upload Release Assets - Linux ARM64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release-assets/task-runner-aarch64-unknown-linux-gnu
+        asset_name: task-runner-aarch64-unknown-linux-gnu
+        asset_content_type: application/octet-stream
+
+    - name: Upload Release Assets - macOS x64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release-assets/task-runner-x86_64-apple-darwin
+        asset_name: task-runner-x86_64-apple-darwin
+        asset_content_type: application/octet-stream
+
+    - name: Upload Release Assets - macOS ARM64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release-assets/task-runner-aarch64-apple-darwin
+        asset_name: task-runner-aarch64-apple-darwin
+        asset_content_type: application/octet-stream
+
+    - name: Upload Release Assets - Windows
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release-assets/task-runner-x86_64-pc-windows-msvc.exe
+        asset_name: task-runner-x86_64-pc-windows-msvc.exe
+        asset_content_type: application/octet-stream 

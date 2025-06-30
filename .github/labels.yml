@@ -1,0 +1,126 @@
+# Labels for issues and pull requests
+labels:
+  # Bug labels
+  - name: bug
+    color: d73a4a
+    description: Something isn't working
+  - name: bug/critical
+    color: b60205
+    description: Critical bug that needs immediate attention
+  - name: bug/regression
+    color: d73a4a
+    description: A bug that was introduced in a recent release
+
+  # Feature labels
+  - name: enhancement
+    color: 0366d6
+    description: New feature or request
+  - name: feature/request
+    color: 0366d6
+    description: Feature request from users
+  - name: feature/planned
+    color: 0e8a16
+    description: Feature that is planned for future release
+
+  # Documentation labels
+  - name: documentation
+    color: 0075ca
+    description: Improvements or additions to documentation
+  - name: docs/readme
+    color: 0075ca
+    description: README documentation updates
+  - name: docs/api
+    color: 0075ca
+    description: API documentation updates
+
+  # Good for contributors
+  - name: good first issue
+    color: 7057ff
+    description: Good for newcomers
+  - name: help wanted
+    color: 008672
+    description: Extra attention is needed
+
+  # Priority labels
+  - name: priority/high
+    color: b60205
+    description: High priority issue
+  - name: priority/medium
+    color: fbca04
+    description: Medium priority issue
+  - name: priority/low
+    color: 0e8a16
+    description: Low priority issue
+
+  # Status labels
+  - name: status/blocked
+    color: d93f0b
+    description: Blocked by another issue
+  - name: status/in-progress
+    color: 1d76db
+    description: Work in progress
+  - name: status/needs-review
+    color: fbca04
+    description: Needs review
+  - name: status/ready
+    color: 0e8a16
+    description: Ready for implementation
+
+  # Type labels
+  - name: type/bug
+    color: d73a4a
+    description: Bug report
+  - name: type/feature
+    color: 0366d6
+    description: Feature request
+  - name: type/question
+    color: cc317c
+    description: Question or support request
+  - name: type/security
+    color: b60205
+    description: Security vulnerability
+
+  # Component labels
+  - name: component/cli
+    color: 5319e7
+    description: CLI interface
+  - name: component/config
+    color: 5319e7
+    description: Configuration handling
+  - name: component/executor
+    color: 5319e7
+    description: Task execution engine
+  - name: component/parser
+    color: 5319e7
+    description: Configuration parsing
+
+  # Maintenance labels
+  - name: maintenance
+    color: 0366d6
+    description: Maintenance tasks
+  - name: refactor
+    color: 0366d6
+    description: Code refactoring
+  - name: performance
+    color: 0e8a16
+    description: Performance improvements
+  - name: testing
+    color: 0075ca
+    description: Testing related changes
+
+  # Special labels
+  - name: pinned
+    color: 5319e7
+    description: Pinned issue
+  - name: duplicate
+    color: cfd3d7
+    description: Duplicate issue
+  - name: wontfix
+    color: cfd3d7
+    description: Will not be fixed
+  - name: invalid
+    color: cfd3d7
+    description: Invalid issue
+  - name: needs-triage
+    color: fbca04
+    description: Needs triage 
