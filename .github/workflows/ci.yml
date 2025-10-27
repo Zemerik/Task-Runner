@@ -96,7 +96,7 @@ jobs:
       run: cargo build --release --target ${{ matrix.target }}
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: task-runner-${{ matrix.target }}
         path: target/${{ matrix.target }}/release/task-runner*
