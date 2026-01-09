@@ -1,6 +1,6 @@
 {
   "name": "@zemerik/task-runner",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A fast and flexible CLI task runner for managing development workflows",
   "main": "index.js",
   "bin": {

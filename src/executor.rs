@@ -186,13 +186,26 @@ impl TaskExecutor {
         env_vars.extend(config.env.clone());
         env_vars.extend(task.env.clone());
         
+        // Determine working directory: task-specific or default from config
+        let working_dir = task.working_dir.as_deref()
+            .or_else(|| config.default_working_dir.as_deref());
+        
+        // Determine timeout: task-specific or default from config
+        let timeout = task.timeout
+            .or(config.default_timeout);
+        
         // Execute commands
         let mut command_results = Vec::new();
         
         for (i, command) in task.commands.iter().enumerate() {
             pb.set_message(format!("{} [{}] {}", task_name, i + 1, command));
             
-            let result = Self::execute_command(command, &env_vars, task.working_dir.as_deref()).await;
+            let result = Self::execute_command(
+                command, 
+                &env_vars, 
+                working_dir,
+                timeout
+            ).await;
             let is_err = result.is_err();
             command_results.push(result);
             
@@ -230,6 +243,7 @@ impl TaskExecutor {
         command: &str,
         env_vars: &HashMap<String, String>,
         working_dir: Option<&str>,
+        timeout: Option<u64>,
     ) -> Result<(), TaskRunnerError> {
         let mut parts = command.split_whitespace();
         let program = parts.next().unwrap_or("");
@@ -252,16 +266,57 @@ impl TaskExecutor {
         cmd.stdout(Stdio::inherit());
         cmd.stderr(Stdio::inherit());
         
-        // Execute command
-        let output = cmd.output()
-            .map_err(|e| TaskRunnerError::TaskExecutionFailed(e.to_string()))?;
-        
-        if output.status.success() {
-            Ok(())
+        // Execute command with optional timeout
+        if let Some(timeout_secs) = timeout {
+            // Use spawn and poll with timeout support
+            let timeout_duration = Duration::from_secs(timeout_secs);
+            let start = Instant::now();
+            
+            let mut child = cmd.spawn()
+                .map_err(|e| TaskRunnerError::TaskExecutionFailed(e.to_string()))?;
+            
+            // Poll for completion with timeout
+            loop {
+                match child.try_wait() {
+                    Ok(Some(status)) => {
+                        if status.success() {
+                            return Ok(());
+                        } else {
+                            return Err(TaskRunnerError::TaskExecutionFailed(
+                                format!("Command failed with exit code: {}", status)
+                            ));
+                        }
+                    }
+                    Ok(None) => {
+                        // Process still running - check timeout
+                        if start.elapsed() >= timeout_duration {
+                            // Timeout - try to kill the process
+                            let _ = child.kill();
+                            let _ = child.wait(); // Wait for kill to complete
+                            return Err(TaskRunnerError::TaskExecutionFailed(
+                                format!("Command timed out after {} seconds", timeout_secs)
+                            ));
+                        }
+                        // Wait a bit before checking again
+                        sleep(Duration::from_millis(100)).await;
+                    }
+                    Err(e) => {
+                        return Err(TaskRunnerError::TaskExecutionFailed(e.to_string()));
+                    }
+                }
+            }
         } else {
-            Err(TaskRunnerError::TaskExecutionFailed(
-                format!("Command failed with exit code: {}", output.status)
-            ))
+            // No timeout - execute normally
+            let output = cmd.output()
+                .map_err(|e| TaskRunnerError::TaskExecutionFailed(e.to_string()))?;
+            
+            if output.status.success() {
+                Ok(())
+            } else {
+                Err(TaskRunnerError::TaskExecutionFailed(
+                    format!("Command failed with exit code: {}", output.status)
+                ))
+            }
         }
     }
     
@@ -295,8 +350,26 @@ impl TaskExecutor {
             println!("    Execution: {}", "Sequential".yellow());
         }
         
-        if let Some(timeout) = task.timeout {
-            println!("    Timeout: {}s", timeout);
+        // Show timeout: task-specific, or default from config, or none
+        let timeout = task.timeout
+            .or(self.config.default_timeout);
+        if let Some(timeout_secs) = timeout {
+            if task.timeout.is_some() {
+                println!("    Timeout: {}s", timeout_secs);
+            } else {
+                println!("    Timeout: {}s (from default)", timeout_secs);
+            }
+        }
+        
+        // Show working directory: task-specific, or default from config, or none
+        let working_dir = task.working_dir.as_deref()
+            .or_else(|| self.config.default_working_dir.as_deref());
+        if let Some(dir) = working_dir {
+            if task.working_dir.is_some() {
+                println!("    Working Directory: {}", dir);
+            } else {
+                println!("    Working Directory: {} (from default)", dir);
+            }
         }
         
         if task.continue_on_error {
