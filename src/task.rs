@@ -111,8 +111,9 @@ impl Task {
     
     /// Validate task configuration
     pub fn validate(&self, name: &str) -> Result<(), String> {
-        if self.commands.is_empty() {
-            return Err(format!("Task '{}' has no commands", name));
+        // Allow empty commands if task has dependencies (orchestrator tasks)
+        if self.commands.is_empty() && self.dependencies.is_empty() {
+            return Err(format!("Task '{}' has no commands and no dependencies", name));
         }
         
         if self.parallel && self.sequential {
@@ -196,9 +197,14 @@ mod tests {
         let task = Task::new(vec!["echo hello".to_string()]);
         assert!(task.validate("test").is_ok());
         
-        // Task with no commands
+        // Task with no commands and no dependencies (invalid)
         let task = Task::new(vec![]);
         assert!(task.validate("test").is_err());
+        
+        // Task with no commands but has dependencies (orchestrator task - valid)
+        let mut task = Task::new(vec![]);
+        task.dependencies = vec!["dep1".to_string(), "dep2".to_string()];
+        assert!(task.validate("test").is_ok());
         
         // Task with both parallel and sequential
         let mut task = Task::new(vec!["echo hello".to_string()]);
