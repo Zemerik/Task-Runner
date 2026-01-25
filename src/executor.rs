@@ -1,6 +1,7 @@
 use crate::config::Config;
 use crate::error::TaskRunnerError;
 use crate::task::{ExecutionMode, Task};
+use crate::utils::expand_env_vars;
 use colored::*;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::collections::HashMap;
@@ -187,8 +188,11 @@ impl TaskExecutor {
         env_vars.extend(task.env.clone());
         
         // Determine working directory: task-specific or default from config
+        // Expand environment variables in working directory path
         let working_dir = task.working_dir.as_deref()
-            .or_else(|| config.default_working_dir.as_deref());
+            .or_else(|| config.default_working_dir.as_deref())
+            .map(|dir| expand_env_vars(dir, &env_vars));
+        let working_dir = working_dir.as_deref();
         
         // Determine timeout: task-specific or default from config
         let timeout = task.timeout
@@ -198,10 +202,12 @@ impl TaskExecutor {
         let mut command_results = Vec::new();
         
         for (i, command) in task.commands.iter().enumerate() {
-            pb.set_message(format!("{} [{}] {}", task_name, i + 1, command));
+            // Expand environment variables in command string
+            let expanded_command = expand_env_vars(command, &env_vars);
+            pb.set_message(format!("{} [{}] {}", task_name, i + 1, &expanded_command));
             
             let result = Self::execute_command(
-                command, 
+                &expanded_command, 
                 &env_vars, 
                 working_dir,
                 timeout

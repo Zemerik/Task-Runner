@@ -279,8 +279,8 @@ We follow [Semantic Versioning](https://semver.org/):
 # Edit Cargo.toml and package.json
 
 # Create and push tag
-git tag v1.0.2
-git push origin v1.0.2
+git tag v1.0.3
+git push origin v1.0.3
 ```
 
 ## 🤝 Community Guidelines

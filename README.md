@@ -9,7 +9,8 @@ A fast and flexible CLI task runner for managing development workflows. Built in
 - 📋 **Dependency Management** - Automatic dependency resolution
 - 🎨 **Rich Output** - Beautiful, colored terminal output with progress indicators
 - 📁 **Multiple Formats** - Support for JSON, YAML, and TOML configuration
-- 🔧 **Environment Variables** - Per-task and global environment configuration
+- 🔧 **Environment Variables** - Per-task and global environment configuration with variable expansion
+- 🔄 **Variable Expansion** - Use `${VAR}` or `$VAR` syntax in commands and paths
 - ⏱️ **Timeout Support** - Set timeouts for long-running tasks
 - 🛡️ **Error Handling** - Robust error handling with continue-on-error options
 
@@ -129,17 +130,49 @@ Task Runner supports multiple configuration file formats:
 }
 ```
 
+### Environment Variable Expansion
+
+Task Runner supports environment variable expansion in command strings and working directory paths. You can use either `${VAR}` or `$VAR` syntax:
+
+```json
+{
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "3000",
+    "BUILD_DIR": "./dist"
+  },
+  "tasks": {
+    "build": {
+      "commands": [
+        "npm run build -- --out-dir ${BUILD_DIR}",
+        "echo Server will run on port $PORT"
+      ],
+      "working_dir": "${BUILD_DIR}/src"
+    }
+  }
+}
+```
+
+Environment variables are expanded in the following order:
+1. System environment variables
+2. Global `env` from configuration
+3. Task-specific `env` (task env overrides global env)
+
+Variables are expanded in:
+- Command strings
+- Working directory paths (`working_dir` and `default_working_dir`)
+
 ### Task Properties
 
 | Property | Type | Description |
 |----------|------|-------------|
 | `description` | string | Human-readable task description |
-| `commands` | string[] | Commands to execute |
+| `commands` | string[] | Commands to execute (supports `${VAR}` and `$VAR` expansion) |
 | `dependencies` | string[] | Tasks that must run before this task |
 | `env` | object | Environment variables for this task |
 | `parallel` | boolean | Run commands in parallel |
 | `sequential` | boolean | Run commands sequentially |
-| `working_dir` | string | Working directory for task execution |
+| `working_dir` | string | Working directory for task execution (supports variable expansion) |
 | `timeout` | number | Timeout in seconds |
 | `continue_on_error` | boolean | Continue if commands fail |
 | `hidden` | boolean | Hide from task list |

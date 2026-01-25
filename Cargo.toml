@@ -1,6 +1,6 @@
 [package]
 name = "task-runner"
-version = "1.0.3"
+version = "1.0.4"
 edition = "2021"
 authors = ["Hemang Yadav"]
 description = "A fast and flexible CLI task runner for managing development workflows"
